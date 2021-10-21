@@ -150,6 +150,38 @@ func TestRegularRateDistributionWithSmallIterationDuration(t *testing.T) {
 	require.Equal(t, 10_000, distributedRate(time.Now()))
 }
 
+func TestRegularRateDistributionWithTrippleIterationDurationAndRate1(t *testing.T) {
+	// 3x distributedIterationDuration
+	iterationDuration := 300 * time.Millisecond
+	rateFn := func(time time.Time) int { return 1 }
+
+	distributedIterationDuration, distributedRate := withRegularDistribution(iterationDuration, rateFn)
+
+	firstTickTime := time.Now()
+	secondTickTime := firstTickTime.Add(distributedIterationDuration)
+	thirdTickTime := secondTickTime.Add(distributedIterationDuration)
+
+	require.Equal(t, 0, distributedRate(firstTickTime))
+	require.Equal(t, 0, distributedRate(secondTickTime))
+	require.Equal(t, 1, distributedRate(thirdTickTime))
+}
+
+func TestRegularRateDistributionWithTrippleIterationDurationAndRate100(t *testing.T) {
+	// 3x distributedIterationDuration
+	iterationDuration := 300 * time.Millisecond
+	rateFn := func(time time.Time) int { return 100 }
+
+	distributedIterationDuration, distributedRate := withRegularDistribution(iterationDuration, rateFn)
+
+	firstTickTime := time.Now()
+	secondTickTime := firstTickTime.Add(distributedIterationDuration)
+	thirdTickTime := secondTickTime.Add(distributedIterationDuration)
+
+	require.Equal(t, 33, distributedRate(firstTickTime))
+	require.Equal(t, 33, distributedRate(secondTickTime))
+	require.Equal(t, 34, distributedRate(thirdTickTime))
+}
+
 func TestRegularRateDistributionWithVariableRate(t *testing.T) {
 	iterationDuration := 1 * time.Second
 	rates := []int{5, 15, 12, 8}
